@@ -240,8 +240,8 @@ ZividCamera::ZividCamera(ros::NodeHandle& nh, ros::NodeHandle& priv)
       nh_.advertiseService("camera_info/serial_number", &ZividCamera::cameraInfoSerialNumberServiceHandler, this);
   is_connected_service_ = nh_.advertiseService("is_connected", &ZividCamera::isConnectedServiceHandler, this);
   capture_service_ = nh_.advertiseService("capture", &ZividCamera::captureServiceHandler, this);
-  capture_and_save_frame_service_ =
-      nh_.advertiseService("capture_and_save_frame", &ZividCamera::captureAndSaveFrameServiceHandler, this);
+  capture_and_save_service_ =
+      nh_.advertiseService("capture_and_save", &ZividCamera::captureAndSaveServiceHandler, this);
   capture_2d_service_ = nh_.advertiseService("capture_2d", &ZividCamera::capture2DServiceHandler, this);
   capture_assistant_suggest_settings_service_ = nh_.advertiseService(
       "capture_assistant/suggest_settings", &ZividCamera::captureAssistantSuggestSettingsServiceHandler, this);
@@ -346,7 +346,7 @@ bool ZividCamera::captureServiceHandler(Capture::Request&, Capture::Response&)
   return true;
 }
 
-bool ZividCamera::captureAndSaveFrameServiceHandler(CaptureAndSaveFrame::Request& req, CaptureAndSaveFrame::Response&)
+bool ZividCamera::captureAndSaveServiceHandler(CaptureAndSave::Request& req, CaptureAndSave::Response&)
 {
   ROS_DEBUG_STREAM(__func__);
 

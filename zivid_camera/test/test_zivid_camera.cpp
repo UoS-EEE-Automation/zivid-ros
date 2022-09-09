@@ -7,7 +7,7 @@
 #include <zivid_camera/CameraInfoSerialNumber.h>
 #include <zivid_camera/CameraInfoModelName.h>
 #include <zivid_camera/Capture.h>
-#include <zivid_camera/CaptureAndSaveFrame.h>
+#include <zivid_camera/CaptureAndSave.h>
 #include <zivid_camera/Capture2D.h>
 #include <zivid_camera/CaptureAssistantSuggestSettings.h>
 #include <zivid_camera/LoadSettingsFromFile.h>
@@ -78,7 +78,7 @@ protected:
   const ros::Duration medium_wait_duration{ 1.0 };
   const ros::Duration dr_get_max_wait_duration{ 5 };
   static constexpr auto capture_service_name = "/zivid_camera/capture";
-  static constexpr auto capture_service_and_save_frame_name = "/zivid_camera/capture_and_save_frame";
+  static constexpr auto capture_service_and_save_name = "/zivid_camera/capture_and_save";
   static constexpr auto capture_2d_service_name = "/zivid_camera/capture_2d";
   static constexpr auto capture_assistant_suggest_settings_service_name = "/zivid_camera/capture_assistant/"
                                                                           "suggest_settings";
@@ -679,24 +679,24 @@ TEST_F(CaptureOutputTest, testCapture2D)
   verify_image_and_camera_info(*color_image_color_sub.lastMessage(), *color_camera_info_sub.lastMessage());
 }
 
-class CaptureAndSaveFrameTest : public TestWithFileCamera
+class CaptureAndSaveTest : public TestWithFileCamera
 {
 protected:
-  void capture_and_save_frame_to_path(const std::string& file_path, bool expected_result)
+  void capture_and_save_to_path(const std::string& file_path, bool expected_result)
   {
     AllCaptureTopicsSubscriber allCaptureTopicsSubscriber(*this);
 
     enableFirst3DAcquisition();
-    zivid_camera::CaptureAndSaveFrame capture_and_save_frame;
-    capture_and_save_frame.request.file_path = file_path;
+    zivid_camera::CaptureAndSave capture_and_save;
+    capture_and_save.request.file_path = file_path;
     if (expected_result)
     {
-      ASSERT_TRUE(ros::service::call(capture_service_and_save_frame_name, capture_and_save_frame));
+      ASSERT_TRUE(ros::service::call(capture_service_and_save_name, capture_and_save));
       ASSERT_TRUE(boost::filesystem::exists(file_path));
     }
     else
     {
-      ASSERT_FALSE(ros::service::call(capture_service_and_save_frame_name, capture_and_save_frame));
+      ASSERT_FALSE(ros::service::call(capture_service_and_save_name, capture_and_save));
       ASSERT_FALSE(boost::filesystem::exists(file_path));
     }
     short_wait_duration.sleep();
@@ -704,34 +704,34 @@ protected:
   }
 };
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFrameNoPath)
+TEST_F(CaptureAndSaveTest, testCaptureAndSaveNoPath)
 {
-  capture_and_save_frame_to_path("", false);
+  capture_and_save_to_path("", false);
 }
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFrameInvalidPath)
+TEST_F(CaptureAndSaveTest, testCaptureAndSaveInvalidPath)
 {
-  capture_and_save_frame_to_path("invalid_path", false);
+  capture_and_save_to_path("invalid_path", false);
 }
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFrameInvalidExtension)
+TEST_F(CaptureAndSaveTest, testCaptureAndSaveInvalidExtension)
 {
-  capture_and_save_frame_to_path("/tmp/invalid_extension.wrong", false);
+  capture_and_save_to_path("/tmp/invalid_extension.wrong", false);
 }
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFrameZDF)
+TEST_F(CaptureAndSaveTest, testCaptureAndSaveZDF)
 {
-  capture_and_save_frame_to_path("/tmp/valid.zdf", true);
+  capture_and_save_to_path("/tmp/valid.zdf", true);
 }
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFramePLY)
+TEST_F(CaptureAndSaveTest, testCaptureAndSavePLY)
 {
-  capture_and_save_frame_to_path("/tmp/valid.ply", true);
+  capture_and_save_to_path("/tmp/valid.ply", true);
 }
 
-TEST_F(CaptureAndSaveFrameTest, testCaptureAndSaveFramePCD)
+TEST_F(CaptureAndSaveTest, testCaptureAndSavePCD)
 {
-  capture_and_save_frame_to_path("/tmp/valid.pcd", true);
+  capture_and_save_to_path("/tmp/valid.pcd", true);
 }
 
 class DynamicReconfigureMinMaxDefaultTest : public TestWithFileCamera

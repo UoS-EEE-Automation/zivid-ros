@@ -9,22 +9,22 @@ from std_msgs.msg import String
 
 class Sample:
     def __init__(self):
-        rospy.init_node("sample_capture_and_save_frame_py", anonymous=True)
+        rospy.init_node("sample_capture_and_save_py", anonymous=True)
 
-        rospy.loginfo("Starting sample_capture_and_save_frame.py")
+        rospy.loginfo("Starting sample_capture_and_save.py")
 
-        rospy.wait_for_service("/zivid_camera/capture_and_save_frame", 30.0)
+        rospy.wait_for_service("/zivid_camera/capture_and_save", 30.0)
 
-        self.capture_and_save_frame_service = rospy.ServiceProxy(
-            "/zivid_camera/capture_and_save_frame", CaptureAndSaveFrame
+        self.capture_and_save_service = rospy.ServiceProxy(
+            "/zivid_camera/capture_and_save", CaptureAndSave
         )
 
         self.enable_first_acquistion()
 
     def capture(self):
-        rospy.loginfo("Calling capture_and_save_frame service")
+        rospy.loginfo("Calling capture_and_save service")
         file_path = "/tmp/capture_py.zdf"
-        self.capture_and_save_frame_service(file_path)
+        self.capture_and_save_service(file_path)
         rospy.loginfo(f"Your .zdf file is now available here: {file_path}")
 
     def enable_first_acquistion(self):

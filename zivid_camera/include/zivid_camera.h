@@ -43,7 +43,7 @@ private:
   bool cameraInfoSerialNumberServiceHandler(CameraInfoSerialNumber::Request& req,
                                             CameraInfoSerialNumber::Response& res);
   bool captureServiceHandler(Capture::Request& req, Capture::Response& res);
-  bool captureAndSaveFrameServiceHandler(CaptureAndSaveFrame::Request& req, CaptureAndSaveFrame::Response& res);
+  bool captureAndSaveServiceHandler(CaptureAndSave::Request& req, CaptureAndSave::Response& res);
   bool capture2DServiceHandler(Capture2D::Request& req, Capture2D::Response& res);
   bool captureAssistantSuggestSettingsServiceHandler(CaptureAssistantSuggestSettings::Request& req,
                                                      CaptureAssistantSuggestSettings::Response& res);
@@ -99,7 +99,7 @@ private:
   ros::ServiceServer camera_info_serial_number_service_;
   ros::ServiceServer camera_info_model_name_service_;
   ros::ServiceServer capture_service_;
-  ros::ServiceServer capture_and_save_frame_service_;
+  ros::ServiceServer capture_and_save_service_;
   ros::ServiceServer capture_2d_service_;
   ros::ServiceServer capture_assistant_suggest_settings_service_;
   ros::ServiceServer load_settings_from_file_service_;

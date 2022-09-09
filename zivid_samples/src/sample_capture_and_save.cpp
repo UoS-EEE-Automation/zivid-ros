@@ -1,6 +1,6 @@
 #include <zivid_camera/SettingsAcquisitionConfig.h>
 #include <zivid_camera/SettingsConfig.h>
-#include <zivid_camera/CaptureAndSaveFrame.h>
+#include <zivid_camera/CaptureAndSave.h>
 #include <Zivid/Version.h>
 #include <dynamic_reconfigure/Reconfigure.h>
 #include <dynamic_reconfigure/client.h>
@@ -19,13 +19,13 @@ namespace
 {
 const ros::Duration default_wait_duration{ 30 };
 
-void capture_and_save_frame()
+void capture_and_save()
 {
-  ROS_INFO("Calling capture_and_save_frame service");
-  zivid_camera::CaptureAndSaveFrame capture_and_save_frame;
+  ROS_INFO("Calling capture_and_save service");
+  zivid_camera::CaptureAndSave capture_and_save;
   std::string file_path = "/tmp/capture_cpp.zdf";
-  capture_and_save_frame.request.file_path = file_path;
-  CHECK(ros::service::call("/zivid_camera/capture_and_save_frame", capture_and_save_frame));
+  capture_and_save.request.file_path = file_path;
+  CHECK(ros::service::call("/zivid_camera/capture_and_save", capture_and_save));
   ROS_INFO("Your .zdf file is now available here: %s", file_path.c_str());
 }
 
@@ -48,19 +48,19 @@ void enable_first_acquisition()
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "sample_capture_and_save_frame_cpp");
+  ros::init(argc, argv, "sample_capture_and_save_cpp");
   ros::NodeHandle n;
 
-  ROS_INFO("Starting sample_capture_and_save_frame.cpp");
+  ROS_INFO("Starting sample_capture_and_save.cpp");
 
-  CHECK(ros::service::waitForService("/zivid_camera/capture_and_save_frame", default_wait_duration));
+  CHECK(ros::service::waitForService("/zivid_camera/capture_and_save", default_wait_duration));
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
   enable_first_acquisition();
 
-  capture_and_save_frame();
+  capture_and_save();
 
   ros::waitForShutdown();
 
