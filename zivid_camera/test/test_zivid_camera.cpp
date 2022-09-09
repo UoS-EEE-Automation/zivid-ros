@@ -78,7 +78,7 @@ protected:
   const ros::Duration medium_wait_duration{ 1.0 };
   const ros::Duration dr_get_max_wait_duration{ 5 };
   static constexpr auto capture_service_name = "/zivid_camera/capture";
-  static constexpr auto capture_service_and_save_name = "/zivid_camera/capture_and_save";
+  static constexpr auto capture_and_save_service_name = "/zivid_camera/capture_and_save";
   static constexpr auto capture_2d_service_name = "/zivid_camera/capture_2d";
   static constexpr auto capture_assistant_suggest_settings_service_name = "/zivid_camera/capture_assistant/"
                                                                           "suggest_settings";
@@ -689,14 +689,15 @@ protected:
     enableFirst3DAcquisition();
     zivid_camera::CaptureAndSave capture_and_save;
     capture_and_save.request.file_path = file_path;
+    allCaptureTopicsSubscriber.assert_num_topics_received(0);
     if (expected_result)
     {
-      ASSERT_TRUE(ros::service::call(capture_service_and_save_name, capture_and_save));
+      ASSERT_TRUE(ros::service::call(capture_and_save_service_name, capture_and_save));
       ASSERT_TRUE(boost::filesystem::exists(file_path));
     }
     else
     {
-      ASSERT_FALSE(ros::service::call(capture_service_and_save_name, capture_and_save));
+      ASSERT_FALSE(ros::service::call(capture_and_save_service_name, capture_and_save));
       ASSERT_FALSE(boost::filesystem::exists(file_path));
     }
     short_wait_duration.sleep();

@@ -309,7 +309,7 @@ a file. This service takes a path as an argument. The chosen format is detected 
 See [Point Cloud](https://support.zivid.com/latest/reference-articles/point-cloud-structure-and-output-formats.html)
 for a list of available formats.
 
-See [Sample Capture and Save Frame](#sample-capture-and-save-frame) for code example.
+See [Sample Capture and Save](#sample-capture-and-save) for code example.
 
 ### camera_info/model_name
 [zivid_camera/CameraInfoModelName.srv](./zivid_camera/srv/CameraInfoModelName.srv)
@@ -628,7 +628,7 @@ rosrun zivid_samples sample_capture_with_settings_from_yml_cpp
 rosrun zivid_samples sample_capture_with_settings_from_yml.py
 ```
 
-### Sample Capture and Save Frame
+### Sample Capture and Save
 
 This sample performs a single-acquisition 3D capture and saves the frame as ZDF file.
 This sample shows how to simply [enable the first default acquisition](#configuration),
