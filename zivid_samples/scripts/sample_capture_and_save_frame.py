@@ -25,6 +25,7 @@ class Sample:
         rospy.loginfo("Calling capture_and_save_frame service")
         file_path = "/tmp/capture_py.zdf"
         self.capture_and_save_frame_service(file_path)
+        rospy.loginfo(f"Your .zdf file is now available here: {file_path}")
 
     def enable_first_acquistion(self):
         rospy.loginfo("Enabling the first acquisition")

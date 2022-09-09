@@ -26,6 +26,7 @@ void capture_and_save_frame()
   std::string file_path = "/tmp/capture_cpp.zdf";
   capture_and_save_frame.request.file_path = file_path;
   CHECK(ros::service::call("/zivid_camera/capture_and_save_frame", capture_and_save_frame));
+  ROS_INFO("Your .zdf file is now available here: %s", file_path.c_str());
 }
 
 void enable_first_acquisition()
