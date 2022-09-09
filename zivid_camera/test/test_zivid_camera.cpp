@@ -700,7 +700,7 @@ protected:
       ASSERT_FALSE(ros::service::call(capture_and_save_service_name, capture_and_save));
       ASSERT_FALSE(boost::filesystem::exists(file_path));
     }
-    short_wait_duration.sleep();
+    medium_wait_duration.sleep();
     allCaptureTopicsSubscriber.assert_num_topics_received(1);
   }
 };
