@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Zivid One+ Types: Can be accessed globally and used as identifiers -->
+    <xacro:property name="Zivid_One_Plus_S" value="0" scope="global" />
+    <xacro:property name="Zivid_One_Plus_M" value="1" scope="global" />
+    <xacro:property name="Zivid_One_Plus_L" value="2" scope="global" />
+
+    <!-- Zivid One+ Optical Frame Angles -->
+    <xacro:property name="angle_type_s" value="15.0" />
+    <xacro:property name="angle_type_m" value="8.5" />
+    <xacro:property name="angle_type_l" value="6.0" />
+
+    <!-- Material Properties -->
+    <material name="zivid_gray">
+        <color rgba="0.25 0.25 0.25 1"/>
+    </material>
+
+    <xacro:macro name="zivid_one_plus_camera" params="prefix type">
+        <!-- Zivid Base Link -->
+        <link name="${prefix}base_link">
+            <!-- Visuals -->
+            <visual>
+                <origin xyz="-0.0030 -0.0758 0.0445" rpy="${0.5*pi} 0 ${0.5*pi}"/>
+                <geometry>
+                    <mesh filename="package://zivid_description/meshes/visual/zivid-one-plus.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="zivid_gray"/>
+            </visual>
+
+            <!-- Collisions -->
+            <collision>
+                <origin xyz="-0.0030 -0.0758 0.0445" rpy="${0.5*pi} 0 ${0.5*pi}"/>
+                <geometry>
+                    <mesh filename="package://zivid_description/meshes/collision/zivid-one-plus.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <!-- Zivid Optical Frame (Measurement Frame)-->
+        <link name="${prefix}optical_frame"/>
+
+        <!-- Set the angle of the optical frame based on the type -->
+        <xacro:if value="${type == Zivid_One_Plus_S}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_s}" />
+        </xacro:if>
+        <xacro:if value="${type == Zivid_One_Plus_M}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_m}" />
+        </xacro:if>
+        <xacro:if value="${type == Zivid_One_Plus_L}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_l}" />
+        </xacro:if>
+
+        <!-- Zivid Optical (Measurement) Joint -->
+        <joint name="${prefix}optical_joint" type="fixed">
+            <origin xyz="0.065 0.062 0.0445" rpy="-${0.5*pi} 0 -${0.5*pi + optical_frame_angle/180*pi}"/>
+            <parent link="${prefix}base_link"/>
+            <child link="${prefix}optical_frame"/>
+        </joint>
+    </xacro:macro>
+</robot>
