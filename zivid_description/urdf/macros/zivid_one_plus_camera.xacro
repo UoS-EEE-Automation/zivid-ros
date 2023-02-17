@@ -19,7 +19,7 @@
 
     <xacro:macro name="zivid_one_plus_camera" params="prefix type">
         <!-- Zivid Base Link -->
-        <link name="${prefix}base_link">
+        <link name="${prefix}_base_link">
             <!-- Visuals -->
             <visual>
                 <origin xyz="-0.0030 -0.0758 0.0445" rpy="${0.5*pi} 0 ${0.5*pi}"/>
@@ -39,7 +39,7 @@
         </link>
 
         <!-- Zivid Optical Frame (Measurement Frame)-->
-        <link name="${prefix}optical_frame"/>
+        <link name="${prefix}_optical_frame"/>
 
         <!-- Set the angle of the optical frame based on the type -->
         <xacro:if value="${type == Zivid_One_Plus_S}" >
@@ -53,10 +53,10 @@
         </xacro:if>
 
         <!-- Zivid Optical (Measurement) Joint -->
-        <joint name="${prefix}optical_joint" type="fixed">
+        <joint name="${prefix}_optical_joint" type="fixed">
             <origin xyz="0.065 0.062 0.0445" rpy="-${0.5*pi} 0 -${0.5*pi + optical_frame_angle/180*pi}"/>
-            <parent link="${prefix}base_link"/>
-            <child link="${prefix}optical_frame"/>
+            <parent link="${prefix}_base_link"/>
+            <child link="${prefix}_optical_frame"/>
         </joint>
     </xacro:macro>
 </robot>
