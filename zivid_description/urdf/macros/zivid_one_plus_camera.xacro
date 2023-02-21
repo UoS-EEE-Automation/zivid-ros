@@ -73,7 +73,18 @@
             <child link="${prefix}_optical_frame"/>
         </joint>
 
+        <!-- Zivid Optical Frame for Gazebo-->
+        <!-- Unsure why the original code uses y positive out of the sensor rather than x? -->
+        <link name="${prefix}_optical_frame_gazebo"/>
+
+        <joint name="${prefix}_optical_gazebo_joint" type="fixed">
+            <origin xyz="0.0 0.0 0.0" rpy="${0.5*pi} -${0.5*pi} 0"/>
+            <parent link="${prefix}_optical_frame"/>
+            <child link="${prefix}_optical_frame_gazebo"/>
+        </joint>
+
         <!--Extensions -->
         <xacro:zivid_one_plus_gazebo prefix="${prefix}"/>
+
     </xacro:macro>
 </robot>
