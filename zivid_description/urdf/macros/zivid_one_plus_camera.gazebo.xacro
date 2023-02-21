@@ -29,11 +29,16 @@
           <alwaysOn>true</alwaysOn>
           <updateRate>1.0</updateRate>
           <cameraName>${camera_name}_ir</cameraName>
-          <imageTopicName>/${camera_name}/color/image_raw</imageTopicName>
+          <!--Hardware driver topic names
+                /${prefix}_camera/color/image_color
+                /${prefix}_camera/depth/image
+                /${prefix}_camera/points/xyzrgba
+          -->
+          <imageTopicName>/${camera_name}/color/image_color</imageTopicName>
           <cameraInfoTopicName>/${camera_name}/color/camera_info</cameraInfoTopicName>
-          <depthImageTopicName>/${camera_name}/depth/image_raw</depthImageTopicName>
+          <depthImageTopicName>/${camera_name}/depth/image</depthImageTopicName>
           <depthImageInfoTopicName>/${camera_name}/depth/camera_info</depthImageInfoTopicName>
-          <pointCloudTopicName>/${camera_name}/depth/points</pointCloudTopicName>
+          <pointCloudTopicName>/${camera_name}/points/xyzrgba</pointCloudTopicName>
           <frameName>${frame_name}</frameName>
           <pointCloudCutoff>0.5</pointCloudCutoff>
           <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
