@@ -2,12 +2,13 @@ name: ROS Commit
 # Note: If the workflow name is changed, the CI badge URL in the README must also be updated
 
 on:
-  push:       # Push trigger runs on any pushed branch.
-  schedule:   # Scheduled trigger runs on the latest commit on the default branch.
+  push:           # Push trigger runs on any pushed branch.
+  pull_request:   # Run on new and updated PR's.
+  schedule:      # Scheduled trigger runs on the latest commit on the default branch.
     - cron:  '0 22 * * *'
 
 env:
-  NEWEST_ZIVID_VERSION: '2.8.1+dd4dffea-1'
+  NEWEST_ZIVID_VERSION: '2.9.0+4dbba385-1'
 
 jobs:
   code-analysis:
@@ -74,7 +75,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        zivid-version: ['2.5.0+19fa6891-1', '2.6.0+fa0036c5-1', '2.6.1+6cec8609-3', '2.7.0+e31dcbe2-1', '2.8.0+891708ba-1']
+        zivid-version: ['2.5.0+19fa6891-1', '2.6.0+fa0036c5-1', '2.6.1+6cec8609-3', '2.7.0+e31dcbe2-1', '2.8.0+891708ba-1', '2.8.1+dd4dffea-1']
         ros-distro: ['ros:noetic-ros-base-focal', 'ros:melodic-ros-base-bionic']
     steps:
       - name: Check out code
