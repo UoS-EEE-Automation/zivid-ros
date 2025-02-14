@@ -35,6 +35,7 @@ set(ZIVID_DRIVER_COMPONENT_NAME ${PROJECT_NAME}_component)
 add_library(
   ${ZIVID_DRIVER_COMPONENT_NAME}
   SHARED
+  src/infield_correction_controller.cpp
   src/zivid_camera.cpp
 )
 
