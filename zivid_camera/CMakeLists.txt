@@ -25,6 +25,9 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(zivid_interfaces REQUIRED)
 
 find_package(Zivid 2.9.0 COMPONENTS Core REQUIRED)
@@ -35,6 +38,7 @@ set(ZIVID_DRIVER_COMPONENT_NAME ${PROJECT_NAME}_component)
 add_library(
   ${ZIVID_DRIVER_COMPONENT_NAME}
   SHARED
+  src/hand_eye_calibration_controller.cpp
   src/infield_correction_controller.cpp
   src/zivid_camera.cpp
 )
@@ -58,6 +62,9 @@ set(ZIVID_DRIVER_DEPENDENCIES
     std_srvs
     sensor_msgs
     image_transport
+    tf2
+    tf2_ros
+    tf2_geometry_msgs
     zivid_interfaces
 )
 ament_target_dependencies(${ZIVID_DRIVER_COMPONENT_NAME} ${ZIVID_DRIVER_DEPENDENCIES})

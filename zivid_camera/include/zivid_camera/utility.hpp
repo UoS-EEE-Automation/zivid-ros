@@ -41,6 +41,36 @@ struct DependentFalse : std::false_type
 {
 };
 
+template <class... Ts>
+struct Overloaded : Ts...
+{
+  using Ts::operator()...;
+};
+
+template <class... Ts>
+Overloaded(Ts...) -> Overloaded<Ts...>;
+
+template <typename T, typename U>
+T safeCast(U);  // Not implemented on purpose.
+
+template <>
+inline int safeCast(size_t value)
+{
+  if (value > size_t{std::numeric_limits<int>::max()}) {
+    throw std::runtime_error("Value is out of range: " + std::to_string(value));
+  }
+  return static_cast<int>(value);
+}
+
+template <>
+inline size_t safeCast(int value)
+{
+  if (value < 0) {
+    throw std::runtime_error("Value is out of range: " + std::to_string(value));
+  }
+  return static_cast<size_t>(value);
+}
+
 template <typename ZividDataModel>
 auto serializeZividDataModel(const ZividDataModel & dm)
 {
