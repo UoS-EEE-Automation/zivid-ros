@@ -321,7 +321,7 @@ calls to the [hand_eye_calibration/calibrate](#hand_eye_calibrationcalibrate) se
 transform from the loaded data.
 
 ### infield_correction/read
-[std_srvs/srv/Trigger](https://docs.ros2.org/latest/api/std_srvs/srv/Trigger.html)
+[zivid_interfaces/srv/InfieldCorrectionRead.srv](./zivid_interfaces/srv/InfieldCorrectionRead.srv)
 
 Returns the state of the [infield
 correction](https://support.zivid.com/en/latest/academy/camera/infield-correction.html) of the camera.
@@ -329,8 +329,9 @@ correction](https://support.zivid.com/en/latest/academy/camera/infield-correctio
 ### infield_correction/verify
 [zivid_interfaces/srv/InfieldCorrectionVerify.srv](./zivid_interfaces/srv/InfieldCorrectionVerify.srv)
 
-Verifies the current camera trueness based on a single capture. This service allows quick assessment of the quality of
-the infield correction on a camera, or the need for one if none exists already.
+Verifies the current camera trueness based on a single capture. The service first performs a capture with the camera,
+and then performs verification on that capture. This service allows quick assessment of the quality of the infield
+correction on a camera, or the need for one if none exists already.
 
 Returns an indication of the dimension trueness at the location where the input data was captured. If the returned
 assessment indicates a trueness error that is above the threshold for your application, consider using
@@ -352,7 +353,7 @@ service. However, other infield correction services can be used without calling 
 can also be used to restart an active infield correction session.
 
 ### infield_correction/capture
-[std_srvs/srv/Trigger](https://docs.ros2.org/latest/api/std_srvs/srv/Trigger.html)
+[zivid_interfaces/srv/InfieldCorrectionCapture.srv](./zivid_interfaces/srv/InfieldCorrectionCapture.srv)
 
 Takes a capture to be used for infield correction. Please point the camera at a Zivid infield calibration object. It is
 recommended to cover several distances, with one or more captures at each distance. Successful captures are stored in

@@ -34,6 +34,7 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 #include <vector>
+#include <zivid_interfaces/srv/infield_correction_capture.hpp>
 #include <zivid_interfaces/srv/infield_correction_compute.hpp>
 #include <zivid_interfaces/srv/infield_correction_read.hpp>
 #include <zivid_interfaces/srv/infield_correction_verify.hpp>
@@ -80,8 +81,8 @@ private:
     std::shared_ptr<std_srvs::srv::Trigger::Response> response);
   void infieldCorrectionCapture(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-    std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+    const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Request> request,
+    std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Response> response);
   void infieldCorrectionCompute(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> request,
@@ -101,7 +102,8 @@ private:
     infield_correction_verify_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_remove_last_capture_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_start_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_capture_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCapture>::SharedPtr
+    infield_correction_capture_;
   rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCompute>::SharedPtr
     infield_correction_compute_;
   rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCompute>::SharedPtr

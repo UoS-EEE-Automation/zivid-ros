@@ -21,6 +21,7 @@ rosidl_generate_interfaces(zivid_interfaces
                            "srv/HandEyeCalibrationCapture.srv"
                            "srv/HandEyeCalibrationLoad.srv"
                            "srv/HandEyeCalibrationStart.srv"
+                           "srv/InfieldCorrectionCapture.srv"
                            "srv/InfieldCorrectionCompute.srv"
                            "srv/InfieldCorrectionRead.srv"
                            "srv/InfieldCorrectionVerify.srv"
