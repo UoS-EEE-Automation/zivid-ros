@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- Data Sheet:
+            https://www.zivid.com/hubfs/Zivid%20One%20Plus%20Datasheet%20(1).pdf?hsCtaTracking=f6b119a4-7444-47ac-83a3-44d4840aa429%7Ccabb4557-32f2-4851-9612-99fe7552235b
+    -->
+
+    <!-- Import Gazebo-Settings -->
+    <xacro:include filename="$(find zivid_description)/urdf/macros/zivid_one_plus_camera.gazebo.xacro" />
+
+    <!-- Zivid One+ Types: Can be accessed globally and used as identifiers -->
+    <xacro:property name="Zivid_One_Plus_S" value="0" scope="global" />
+    <xacro:property name="Zivid_One_Plus_M" value="1" scope="global" />
+    <xacro:property name="Zivid_One_Plus_L" value="2" scope="global" />
+
+    <!-- Zivid One+ Optical Frame Angles -->
+    <xacro:property name="angle_type_s" value="15.0" />
+    <xacro:property name="angle_type_m" value="8.5" />
+    <xacro:property name="angle_type_l" value="6.0" />
+
+    <!-- Material Properties -->
+    <material name="zivid_gray">
+        <color rgba="0.25 0.25 0.25 1"/>
+    </material>
+
+    <xacro:macro name="zivid_one_plus_camera" params="prefix type">
+
+        <!-- Zivid Base Link -->
+        <link name="${prefix}_base_link">
+            <!-- Visuals -->
+            <visual>
+                <origin xyz="-0.0030 -0.0758 0.0445" rpy="${0.5*pi} 0 ${0.5*pi}"/>
+                <geometry>
+                    <mesh filename="package://zivid_description/meshes/visual/zivid-one-plus.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="zivid_gray"/>
+            </visual>
+
+            <!-- Collisions -->
+            <collision>
+                <origin xyz="-0.0030 -0.0758 0.0445" rpy="${0.5*pi} 0 ${0.5*pi}"/>
+                <geometry>
+                    <mesh filename="package://zivid_description/meshes/collision/zivid-one-plus.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+
+            <!-- Inertial -->
+            <inertial>
+                <mass value="2"/>
+                <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+            </inertial>
+
+        </link>
+
+        <!-- Zivid Optical Frame (Measurement Frame)-->
+        <link name="${prefix}_optical_frame"/>
+
+        <!-- Set the angle of the optical frame based on the type -->
+        <xacro:if value="${type == Zivid_One_Plus_S}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_s}" />
+        </xacro:if>
+        <xacro:if value="${type == Zivid_One_Plus_M}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_m}" />
+        </xacro:if>
+        <xacro:if value="${type == Zivid_One_Plus_L}" >
+            <xacro:property name="optical_frame_angle" value="${angle_type_l}" />
+        </xacro:if>
+
+        <!-- Zivid Optical (Measurement) Joint -->
+        <joint name="${prefix}_optical_joint" type="fixed">
+            <origin xyz="0.065 0.062 0.0445" rpy="-${0.5*pi} 0 -${0.5*pi + optical_frame_angle/180*pi}"/>
+            <parent link="${prefix}_base_link"/>
+            <child link="${prefix}_optical_frame"/>
+        </joint>
+
+        <!-- Zivid Optical Frame for Gazebo-->
+        <!-- Unsure why the original code uses y positive out of the sensor rather than x? -->
+        <link name="${prefix}_optical_frame_gazebo"/>
+
+        <joint name="${prefix}_optical_gazebo_joint" type="fixed">
+            <origin xyz="0.0 0.0 0.0" rpy="${0.5*pi} -${0.5*pi} 0"/>
+            <parent link="${prefix}_optical_frame"/>
+            <child link="${prefix}_optical_frame_gazebo"/>
+        </joint>
+
+        <!--Extensions -->
+        <xacro:zivid_one_plus_gazebo prefix="${prefix}"/>
+
+    </xacro:macro>
+</robot>
