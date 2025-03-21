@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <zivid_interfaces/srv/infield_correction_compute.hpp>
+#include <zivid_interfaces/srv/infield_correction_read.hpp>
 #include <zivid_interfaces/srv/infield_correction_verify.hpp>
 
 namespace Zivid
@@ -59,8 +60,8 @@ public:
 private:
   void infieldCorrectionRead(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-    std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+    const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Request> request,
+    std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Response> response);
   void infieldCorrectionReset(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
@@ -94,7 +95,7 @@ private:
   Zivid::Camera & camera_;
 
   std::unique_ptr<InfieldCorrectionState> infield_correction_state_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_read_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionRead>::SharedPtr infield_correction_read_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_reset_;
   rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionVerify>::SharedPtr
     infield_correction_verify_;

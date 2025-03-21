@@ -100,7 +100,7 @@ InfieldCorrectionController::InfieldCorrectionController(
   using namespace std::placeholders;
 
   infield_correction_state_ = std::make_unique<InfieldCorrectionState>();
-  infield_correction_read_ = node_.create_service<std_srvs::srv::Trigger>(
+  infield_correction_read_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionRead>(
     "infield_correction/read",
     std::bind(&InfieldCorrectionController::infieldCorrectionRead, this, _1, _2, _3));
   infield_correction_reset_ = node_.create_service<std_srvs::srv::Trigger>(
@@ -132,8 +132,8 @@ InfieldCorrectionController::~InfieldCorrectionController() = default;
 
 void InfieldCorrectionController::infieldCorrectionRead(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
-  const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
-  std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+  const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Request> /*request*/,
+  std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Response> response)
 {
   RCLCPP_INFO_STREAM(node_.get_logger(), __func__);
 
@@ -143,10 +143,14 @@ void InfieldCorrectionController::infieldCorrectionRead(
         const auto timestamp = Zivid::Experimental::Calibration::cameraCorrectionTimestamp(camera_);
         const auto time = std::chrono::system_clock::to_time_t(timestamp);
         std::stringstream ss;
-        ss << "Timestamp of current camera correction: "
+        ss << "Timestamp of the current camera correction: "
            << std::put_time(std::gmtime(&time), "%FT%TZ");
         response->message = ss.str();
+        response->has_camera_correction = true;
+        response->camera_correction_timestamp.sec = static_cast<int32_t>(time);
+        response->camera_correction_timestamp.nanosec = 0;
       } else {
+        response->has_camera_correction = false;
         response->message = "This camera has no in-field correction written to it.";
       }
     },

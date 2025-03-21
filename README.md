@@ -345,10 +345,11 @@ Resets the infield correction on the camera to factory settings.
 ### infield_correction/start
 [std_srvs/srv/Trigger](https://docs.ros2.org/latest/api/std_srvs/srv/Trigger.html)
 
-Prepares for infield correction, clears any infield correction captures gathered so far in the `zivid_camera` node. This
-service must be called first to perform infield correction. It can also be used to restart an active infield correction
-session. After calling this service, one can proceed with captures by calling the
-[infield_correction/capture](#infield_correctioncapture) service.
+Prepares for infield correction, and clears any infield correction captures gathered so far in the `zivid_camera` node.
+
+This service must be called before gathering captures using the [infield_correction/capture](#infield_correctioncapture)
+service. However, other infield correction services can be used without calling the start service first. This service
+can also be used to restart an active infield correction session.
 
 ### infield_correction/capture
 [std_srvs/srv/Trigger](https://docs.ros2.org/latest/api/std_srvs/srv/Trigger.html)
@@ -356,6 +357,8 @@ session. After calling this service, one can proceed with captures by calling th
 Takes a capture to be used for infield correction. Please point the camera at a Zivid infield calibration object. It is
 recommended to cover several distances, with one or more captures at each distance. Successful captures are stored in
 the `zivid_camera` node.
+
+Before calling this service, a call to [infield_correction/start](#infield_correctionstart) must have been made first.
 
 After sufficient number of captures, proceed by calling the [infield_correction/compute](#infield_correctioncompute)
 service to compute the camera correction based on the captures gathered so far. To compute the correction and write it
