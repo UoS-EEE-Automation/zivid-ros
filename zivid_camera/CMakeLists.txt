@@ -106,7 +106,11 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   set(TEST_TARGET_NAME ${PROJECT_NAME}_test)
 
-  ament_add_gtest(${TEST_TARGET_NAME} test/test_zivid_camera.cpp TIMEOUT 480)
+  ament_add_gtest(${TEST_TARGET_NAME}
+      test/test_zivid_camera.cpp
+      test/test_infield_correction_controller.cpp
+      TIMEOUT 480
+  )
   ament_target_dependencies(${TEST_TARGET_NAME}
       rclcpp
       std_msgs
