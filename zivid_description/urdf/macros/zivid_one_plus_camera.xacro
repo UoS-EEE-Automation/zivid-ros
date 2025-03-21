@@ -23,7 +23,14 @@
         <color rgba="0.25 0.25 0.25 1"/>
     </material>
 
-    <xacro:macro name="zivid_one_plus_camera" params="prefix type">
+    <xacro:macro name="zivid_one_plus_camera" params="parent prefix type">
+
+        <!-- Joint to External Link -->
+        <joint name="${prefix}_base_link_joint" type="fixed">
+            <origin xyz="0.0 0.0 0.0" rpy="${0.0*pi} ${0.0*pi} ${0.0*pi}"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}_base_link"/>
+        </joint>
 
         <!-- Zivid Base Link -->
         <link name="${prefix}_base_link">
