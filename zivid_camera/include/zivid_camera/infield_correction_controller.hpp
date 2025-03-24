@@ -48,7 +48,14 @@ namespace zivid_camera
 {
 struct InfieldCorrectionState
 {
-  bool started = false;
+  enum class State
+  {
+    Uninitialized,
+    Started,
+    WriteCompleted,
+  };
+
+  State state = State::Uninitialized;
   std::vector<Zivid::Experimental::Calibration::InfieldCorrectionInput> dataset;
 };
 
@@ -91,6 +98,8 @@ private:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Response> response);
+
+  void ensureStarted() const;
 
   rclcpp::Node & node_;
   Zivid::Camera & camera_;

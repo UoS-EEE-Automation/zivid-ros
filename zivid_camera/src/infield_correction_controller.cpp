@@ -212,6 +212,7 @@ void InfieldCorrectionController::infieldCorrectionRemoveLastCapture(
 
   runFunctionAndCatchExceptions(
     [&]() {
+      ensureStarted();
       if (infield_correction_state_->dataset.empty()) {
         throw std::runtime_error("Infield correction dataset is empty");
       }
@@ -230,7 +231,7 @@ void InfieldCorrectionController::infieldCorrectionStart(
   runFunctionAndCatchExceptions(
     [&]() {
       *infield_correction_state_ = {};
-      infield_correction_state_->started = true;
+      infield_correction_state_->state = InfieldCorrectionState::State::Started;
     },
     response, node_.get_logger(), "InfieldCorrectionStart");
 }
@@ -244,14 +245,9 @@ void InfieldCorrectionController::infieldCorrectionCapture(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      if (!infield_correction_state_->started) {
-        throw std::runtime_error(
-          "Infield correction not started. Please call the infield correction start service before "
-          "capturing.");
-      }
-
       auto & dataset = infield_correction_state_->dataset;
       response->number_of_captures = safeCast<int>(dataset.size());
+      ensureStarted();
       const auto detectionResult = Zivid::Calibration::detectCalibrationBoard(camera_);
       const auto input = Zivid::Experimental::Calibration::InfieldCorrectionInput{detectionResult};
 
@@ -302,8 +298,10 @@ void InfieldCorrectionController::infieldCorrectionCompute(
     [&]() {
       const auto & dataset = infield_correction_state_->dataset;
       // Set started & number of captures before computing, so that it is reported regardless of any exceptions.
-      response->infield_correction_started = infield_correction_state_->started;
+      response->infield_correction_started =
+        (infield_correction_state_->state == InfieldCorrectionState::State::Started);
       response->number_of_captures = safeCast<int>(dataset.size());
+      ensureStarted();
       const auto correction = Zivid::Experimental::Calibration::computeCameraCorrection(dataset);
       const auto accuracyEstimate = correction.accuracyEstimate();
       const auto statistics = calculateInfieldCorrectionStatistics(dataset);
@@ -329,8 +327,10 @@ void InfieldCorrectionController::infieldCorrectionComputeAndWrite(
   runFunctionAndCatchExceptions(
     [&]() {
       auto & dataset = infield_correction_state_->dataset;
-      response->infield_correction_started = infield_correction_state_->started;
+      response->infield_correction_started =
+        (infield_correction_state_->state == InfieldCorrectionState::State::Started);
       response->number_of_captures = safeCast<int>(dataset.size());
+      ensureStarted();
       const auto correction = Zivid::Experimental::Calibration::computeCameraCorrection(dataset);
       RCLCPP_DEBUG(node_.get_logger(), "Writing correction to camera");
       Zivid::Experimental::Calibration::writeCameraCorrection(camera_, correction);
@@ -344,10 +344,33 @@ void InfieldCorrectionController::infieldCorrectionComputeAndWrite(
       response->dimension_accuracy = accuracyEstimate.dimensionAccuracy();
       response->message = "Camera correction successfully written to camera.\n" +
                           infieldCorrectionEstimateToString(statistics, accuracyEstimate);
-      // Clear the dataset after a successful write, the captures cannot be used again.
-      dataset.clear();
+      // Clear the infield correction session after a successful write, the captures cannot be used again.
+      *infield_correction_state_ = {};
+      infield_correction_state_->state = InfieldCorrectionState::State::WriteCompleted;
     },
     response, node_.get_logger(), "InfieldCorrectionComputeAndWrite");
+}
+
+void InfieldCorrectionController::ensureStarted() const
+{
+  switch (infield_correction_state_->state) {
+    case InfieldCorrectionState::State::Uninitialized:
+      throw std::runtime_error(
+        "Infield correction not started. Please call the '" +
+        std::string{infield_correction_start_->get_service_name()} + "' service first.");
+      break;
+    case InfieldCorrectionState::State::Started:
+      break;
+    case InfieldCorrectionState::State::WriteCompleted:
+      throw std::runtime_error(
+        "A new infield correction has been written to the camera. The infield correction session "
+        "needs to be restarted before proceeding. This can be done by calling the '" +
+        std::string{infield_correction_start_->get_service_name()} + "' service");
+    default:
+      throw std::runtime_error(
+        "Internal error. Unhandled infield correction state: " +
+        std::to_string(static_cast<int>(infield_correction_state_->state)));
+  }
 }
 
 }  // namespace zivid_camera

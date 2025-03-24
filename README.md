@@ -388,8 +388,10 @@ working range, if the correction is later written to the camera. The correction 
 [zivid_interfaces/srv/InfieldCorrectionCompute.srv](./zivid_interfaces/srv/InfieldCorrectionCompute.srv)
 
 Calculates the new infield correction based the captured data gathered so far through the service
-[infield_correction/capture](#infield_correctioncapture), and writes the result to the camera. If the write operation
-is successful, the infield correction capture data is cleared.
+[infield_correction/capture](#infield_correctioncapture), and writes the result to the camera.
+
+If the write operation is successful, the infield correction capture data is cleared. To perform infield correction
+again, a new session must be started with a call to the [infield_correction/start](#infield_correctionstart) service.
 
 Please see the [infield_correction/compute](#infield_correctioncompute) service for more information on the computed
 correction.

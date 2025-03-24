@@ -66,12 +66,6 @@ protected:
     ASSERT_GT(response->z_min, 0.0);
     ASSERT_GT(response->z_max, response->z_min);
   }
-};
-
-class TestWithCalibrationBoardFreshNode : public TestWithCalibrationBoard
-{
-protected:
-  TestWithCalibrationBoardFreshNode() : TestWithCalibrationBoard{NodeReusePolicy::RestartNode} {}
 
   static void verifyYearsOfTimeSinceEpoch(const builtin_interfaces::msg::Time & time)
   {
@@ -81,6 +75,26 @@ protected:
     ASSERT_GE(year, 2025);
     ASSERT_LE(year, 2125);  // This needs to be updated in 100 years.
   }
+
+  void infieldStartCaptureWrite()
+  {
+    auto start = doStdSrvsTriggerRequest("infield_correction/start");
+    ASSERT_TRUE(start->success);
+
+    auto capture = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCapture>(
+      "infield_correction/capture");
+    ASSERT_TRUE(capture->success);
+
+    auto compute = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCompute>(
+      "infield_correction/compute_and_write");
+    verifyInfieldComputeSuccess(compute, 1, true);
+  }
+};
+
+class TestWithCalibrationBoardFreshNode : public TestWithCalibrationBoard
+{
+protected:
+  TestWithCalibrationBoardFreshNode() : TestWithCalibrationBoard{NodeReusePolicy::RestartNode} {}
 };
 
 TEST_F(TestWithFileCamera, testInfieldCorrectionCaptureFailed)
@@ -131,8 +145,7 @@ TEST_F(TestWithCalibrationBoardFreshNode, testInfieldCorrectionStartRequiredBefo
   ASSERT_EQ(capture->number_of_captures, 0);
   ASSERT_EQ(
     capture->message,
-    "Infield correction not started. Please call the infield correction start service before "
-    "capturing.");
+    "Infield correction not started. Please call the '/infield_correction/start' service first.");
 
   auto start = doStdSrvsTriggerRequest("infield_correction/start");
   verifyTriggerResponseSuccess(start);
@@ -176,7 +189,8 @@ TEST_F(TestWithCalibrationBoardFreshNode, testInfieldCorrectionCompute)
   ASSERT_EQ(compute->infield_correction_started, false);
   ASSERT_EQ(compute->number_of_captures, 0);
   ASSERT_EQ(
-    compute->message, "Cannot compute in-field correction with empty data set. { dataset: {  } }");
+    compute->message,
+    "Infield correction not started. Please call the '/infield_correction/start' service first.");
 
   auto start = doStdSrvsTriggerRequest("infield_correction/start");
   verifyTriggerResponseSuccess(start);
@@ -216,16 +230,7 @@ TEST_F(TestWithCalibrationBoardFreshNode, testInfieldCorrectionReadWriteResetCyc
   ASSERT_EQ(read->camera_correction_timestamp.nanosec, 0);
   ASSERT_EQ(read->message, "This camera has no in-field correction written to it.");
 
-  auto start = doStdSrvsTriggerRequest("infield_correction/start");
-  ASSERT_TRUE(start->success);
-
-  auto capture = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCapture>(
-    "infield_correction/capture");
-  ASSERT_TRUE(capture->success);
-
-  auto compute = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCompute>(
-    "infield_correction/compute_and_write");
-  verifyInfieldComputeSuccess(compute, 1, true);
+  infieldStartCaptureWrite();
 
   read = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionRead>("infield_correction/read");
   ASSERT_TRUE(read->success);
@@ -247,14 +252,48 @@ TEST_F(TestWithCalibrationBoardFreshNode, testInfieldCorrectionReadWriteResetCyc
   ASSERT_EQ(read->message, "This camera has no in-field correction written to it.");
 }
 
+TEST_F(TestWithCalibrationBoard, testInfieldCorrectionWriteThenCaptureOperations)
+{
+  infieldStartCaptureWrite();
+
+  const std::string message =
+    "A new infield correction has been written to the camera. The infield correction session needs "
+    "to be restarted before proceeding. This can be done by calling the "
+    "'/infield_correction/start' service";
+
+  verifyTriggerResponseError(
+    doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCapture>(
+      "infield_correction/capture"),
+    message);
+
+  verifyTriggerResponseError(
+    doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCompute>(
+      "infield_correction/compute"),
+    message);
+
+  verifyTriggerResponseError(
+    doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCompute>(
+      "infield_correction/compute_and_write"),
+    message);
+
+  verifyTriggerResponseError(
+    doStdSrvsTriggerRequest("infield_correction/remove_last_capture"), message);
+}
+
 TEST_F(TestWithCalibrationBoardFreshNode, testInfieldCorrectionRemoveLastCapture)
 {
   auto remove_last_capture = doStdSrvsTriggerRequest("infield_correction/remove_last_capture");
   ASSERT_FALSE(remove_last_capture->success);
-  ASSERT_EQ(remove_last_capture->message, "Infield correction dataset is empty");
+  ASSERT_EQ(
+    remove_last_capture->message,
+    "Infield correction not started. Please call the '/infield_correction/start' service first.");
 
   auto start = doStdSrvsTriggerRequest("infield_correction/start");
   ASSERT_TRUE(start->success);
+
+  remove_last_capture = doStdSrvsTriggerRequest("infield_correction/remove_last_capture");
+  ASSERT_FALSE(remove_last_capture->success);
+  ASSERT_EQ(remove_last_capture->message, "Infield correction dataset is empty");
 
   auto capture = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCapture>(
     "infield_correction/capture");
