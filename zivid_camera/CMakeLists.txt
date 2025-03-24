@@ -40,6 +40,7 @@ add_library(
   SHARED
   src/hand_eye_calibration_controller.cpp
   src/infield_correction_controller.cpp
+  src/utility.cpp
   src/zivid_camera.cpp
 )
 

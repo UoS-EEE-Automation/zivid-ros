@@ -28,9 +28,14 @@
 
 #pragma once
 
+#include <Zivid/Calibration/Pose.h>
 #include <Zivid/Exception.h>
+#include <Zivid/Matrix.h>
 
 #include <exception>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/transform.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
@@ -107,4 +112,23 @@ template <typename Logger>
   RCLCPP_ERROR(logger, "%s", message.c_str());
   throw std::runtime_error(message);
 }
+
+inline constexpr double meterToMillimeterFactor = 1000.0;
+
+constexpr float rosLengthToZivid(double value)
+{
+  return static_cast<float>(meterToMillimeterFactor * value);
+}
+
+constexpr double zividLengthToRos(float value)
+{
+  return static_cast<double>(value) / meterToMillimeterFactor;
+}
+
+Zivid::Calibration::Pose toZividPose(const geometry_msgs::msg::Pose & pose);
+
+Zivid::PointXYZ toZividPoint(const geometry_msgs::msg::Point & point);
+
+geometry_msgs::msg::Transform toGeometryMsgTransform(const Zivid::Matrix4x4 & transform);
+
 }  // namespace zivid_camera
