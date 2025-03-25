@@ -724,13 +724,15 @@ may try to connect to the same camera at the same time.
 ### How to run the unit and module tests
 
 This project comes with a set of unit and module tests to verify the provided functionality. To run
-the tests locally, first download and install the file camera used for testing:
+the tests locally, first download and install the required data used for testing:
 ```bash
-wget -q https://www.zivid.com/software/FileCameraZivid2M70.zip
-unzip ./FileCameraZivid2M70.zip
-rm ./FileCameraZivid2M70.zip
-sudo mkdir -p /usr/share/Zivid/data/
-sudo mv ./FileCameraZivid2M70.zfc /usr/share/Zivid/data/
+for sample in "FileCameraZivid2M70.zip" "BinWithCalibrationBoard.zip"; do
+    echo "Downloading ${sample}"
+    wget -q "https://www.zivid.com/software/${sample}" || exit $?
+    mkdir -p /usr/share/Zivid/data/ || exit $?
+    unzip "./${sample}" -d /usr/share/Zivid/data/ || exit $?
+    rm "./${sample}" || exit $?
+done
 ```
 
 Then run the tests:
