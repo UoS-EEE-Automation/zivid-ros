@@ -89,19 +89,19 @@ public:
   ~HandEyeCalibrationController();
 
 private:
-  void handEyeCalibrationStart(
+  void startServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationStart::Request> request,
     std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationStart::Response> response);
-  void handEyeCalibrationLoad(
+  void loadServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationLoad::Request> request,
     std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationLoad::Response> response);
-  void handEyeCalibrationCapture(
+  void captureServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCapture::Request> request,
     std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCapture::Response> response);
-  void handEyeCalibrationCalibrate(
+  void calibrateServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCalibrate::Request> request,
     std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCalibrate::Response> response);
@@ -110,14 +110,10 @@ private:
   Zivid::Camera & camera_;
   CaptureSettingsController<Zivid::Settings> & settings_controller_;
 
-  std::unique_ptr<HandEyeCalibrationState> hand_eye_calibration_state_;
-  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationStart>::SharedPtr
-    hand_eye_calibration_start_;
-  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationLoad>::SharedPtr
-    hand_eye_calibration_load_;
-  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationCapture>::SharedPtr
-    hand_eye_calibration_capture_;
-  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationCalibrate>::SharedPtr
-    hand_eye_calibration_calibrate_;
+  std::unique_ptr<HandEyeCalibrationState> state_;
+  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationStart>::SharedPtr start_service_;
+  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationLoad>::SharedPtr load_service_;
+  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationCapture>::SharedPtr capture_service_;
+  rclcpp::Service<zivid_interfaces::srv::HandEyeCalibrationCalibrate>::SharedPtr calibrate_service_;
 };
 }  // namespace zivid_camera

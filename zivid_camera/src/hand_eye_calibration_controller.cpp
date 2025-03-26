@@ -223,27 +223,24 @@ HandEyeCalibrationController::HandEyeCalibrationController(
 {
   using namespace std::placeholders;
 
-  hand_eye_calibration_state_ = std::make_unique<HandEyeCalibrationState>();
-  hand_eye_calibration_start_ =
-    node_.create_service<zivid_interfaces::srv::HandEyeCalibrationStart>(
-      "hand_eye_calibration/start",
-      std::bind(&HandEyeCalibrationController::handEyeCalibrationStart, this, _1, _2, _3));
-  hand_eye_calibration_load_ = node_.create_service<zivid_interfaces::srv::HandEyeCalibrationLoad>(
+  state_ = std::make_unique<HandEyeCalibrationState>();
+  start_service_ = node_.create_service<zivid_interfaces::srv::HandEyeCalibrationStart>(
+    "hand_eye_calibration/start",
+    std::bind(&HandEyeCalibrationController::startServiceHandler, this, _1, _2, _3));
+  load_service_ = node_.create_service<zivid_interfaces::srv::HandEyeCalibrationLoad>(
     "hand_eye_calibration/load",
-    std::bind(&HandEyeCalibrationController::handEyeCalibrationLoad, this, _1, _2, _3));
-  hand_eye_calibration_capture_ =
-    node_.create_service<zivid_interfaces::srv::HandEyeCalibrationCapture>(
-      "hand_eye_calibration/capture",
-      std::bind(&HandEyeCalibrationController::handEyeCalibrationCapture, this, _1, _2, _3));
-  hand_eye_calibration_calibrate_ =
-    node_.create_service<zivid_interfaces::srv::HandEyeCalibrationCalibrate>(
-      "hand_eye_calibration/calibrate",
-      std::bind(&HandEyeCalibrationController::handEyeCalibrationCalibrate, this, _1, _2, _3));
+    std::bind(&HandEyeCalibrationController::loadServiceHandler, this, _1, _2, _3));
+  capture_service_ = node_.create_service<zivid_interfaces::srv::HandEyeCalibrationCapture>(
+    "hand_eye_calibration/capture",
+    std::bind(&HandEyeCalibrationController::captureServiceHandler, this, _1, _2, _3));
+  calibrate_service_ = node_.create_service<zivid_interfaces::srv::HandEyeCalibrationCalibrate>(
+    "hand_eye_calibration/calibrate",
+    std::bind(&HandEyeCalibrationController::calibrateServiceHandler, this, _1, _2, _3));
 }
 
 HandEyeCalibrationController::~HandEyeCalibrationController() = default;
 
-void HandEyeCalibrationController::handEyeCalibrationStart(
+void HandEyeCalibrationController::startServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationStart::Request> request,
   std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationStart::Response> response)
@@ -252,23 +249,22 @@ void HandEyeCalibrationController::handEyeCalibrationStart(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      *hand_eye_calibration_state_ = {};
+      *state_ = {};
 
       if (!request->working_directory.empty()) {
         const auto directory = ensureEmptyDirectoryOrThrow(request->working_directory);
-        hand_eye_calibration_state_->working_directory = directory;
+        state_->working_directory = directory;
       }
 
-      hand_eye_calibration_state_->calibration_objects =
-        getHandEyeCalibrationObjects(request->calibration_objects);
+      state_->calibration_objects = getHandEyeCalibrationObjects(request->calibration_objects);
 
-      hand_eye_calibration_state_->state = HandEyeCalibrationState::State::CaptureAndCalibrate;
+      state_->state = HandEyeCalibrationState::State::CaptureAndCalibrate;
       response->success = true;
     },
     response, node_.get_logger(), "HandEyeCalibrationStart");
 }
 
-void HandEyeCalibrationController::handEyeCalibrationLoad(
+void HandEyeCalibrationController::loadServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationLoad::Request> request,
   std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationLoad::Response> response)
@@ -277,7 +273,7 @@ void HandEyeCalibrationController::handEyeCalibrationLoad(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      *hand_eye_calibration_state_ = {};
+      *state_ = {};
 
       if (request->working_directory.empty()) {
         throw std::runtime_error{"Provided path to working directory is empty"};
@@ -289,20 +285,18 @@ void HandEyeCalibrationController::handEyeCalibrationLoad(
           "Provided path to working directory is not a directory: " + request->working_directory};
       }
 
-      hand_eye_calibration_state_->calibration_objects =
-        getHandEyeCalibrationObjects(request->calibration_objects);
+      state_->calibration_objects = getHandEyeCalibrationObjects(request->calibration_objects);
 
-      hand_eye_calibration_state_->input = loadHandEyeWorkspace(
-        hand_eye_calibration_state_->working_directory.value(),
-        hand_eye_calibration_state_->calibration_objects.value());
+      state_->input = loadHandEyeWorkspace(
+        state_->working_directory.value(), state_->calibration_objects.value());
 
-      hand_eye_calibration_state_->state = HandEyeCalibrationState::State::ReadWorkspace;
+      state_->state = HandEyeCalibrationState::State::ReadWorkspace;
       response->success = true;
     },
     response, node_.get_logger(), "HandEyeCalibrationLoad");
 }
 
-void HandEyeCalibrationController::handEyeCalibrationCapture(
+void HandEyeCalibrationController::captureServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCapture::Request> request,
   std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCapture::Response> response)
@@ -311,7 +305,7 @@ void HandEyeCalibrationController::handEyeCalibrationCapture(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      switch (hand_eye_calibration_state_->state) {
+      switch (state_->state) {
         case HandEyeCalibrationState::State::Uninitialized:
           throw std::runtime_error{
             "Hand-eye calibration is not started, capturing is not allowed."};
@@ -325,7 +319,7 @@ void HandEyeCalibrationController::handEyeCalibrationCapture(
         default:
           throw std::runtime_error{
             "Internal error. Unhandled hand-eye calibration state: " +
-            std::to_string(static_cast<int>(hand_eye_calibration_state_->state))};
+            std::to_string(static_cast<int>(state_->state))};
       }
 
       const auto settings = settings_controller_.currentSettings();
@@ -335,11 +329,11 @@ void HandEyeCalibrationController::handEyeCalibrationCapture(
       const auto frame = camera_.capture(settings);
 
       const auto robot_pose = toZividPose(request->robot_pose);
-      const int capture_handle = safeCast<int>(hand_eye_calibration_state_->input.size());
-      const auto & working_directory = hand_eye_calibration_state_->working_directory;
+      const int capture_handle = safeCast<int>(state_->input.size());
+      const auto & working_directory = state_->working_directory;
 
-      const auto detection_result = detectHandEyeCalibrationObject(
-        hand_eye_calibration_state_->calibration_objects.value(), frame);
+      const auto detection_result =
+        detectHandEyeCalibrationObject(state_->calibration_objects.value(), frame);
 
       std::visit(
         Overloaded{
@@ -349,14 +343,14 @@ void HandEyeCalibrationController::handEyeCalibrationCapture(
                 working_directory.value(), capture_handle, frame, robot_pose,
                 valid_detection.pose());
             }
-            hand_eye_calibration_state_->input.emplace_back(robot_pose, valid_detection);
+            state_->input.emplace_back(robot_pose, valid_detection);
           },
           [&](const Zivid::Calibration::DetectionResultFiducialMarkers & valid_detection) {
             if (working_directory.has_value()) {
               saveHandEyeCaptureInWorkingDirectory(
                 working_directory.value(), capture_handle, frame, robot_pose, std::nullopt);
             }
-            hand_eye_calibration_state_->input.emplace_back(robot_pose, valid_detection);
+            state_->input.emplace_back(robot_pose, valid_detection);
           },
           [&](const std::string & error_message) { throw std::runtime_error{error_message}; }},
 
@@ -368,7 +362,7 @@ void HandEyeCalibrationController::handEyeCalibrationCapture(
     response, node_.get_logger(), "HandEyeCalibrationCapture");
 }
 
-void HandEyeCalibrationController::handEyeCalibrationCalibrate(
+void HandEyeCalibrationController::calibrateServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCalibrate::Request> request,
   std::shared_ptr<zivid_interfaces::srv::HandEyeCalibrationCalibrate::Response> response)
@@ -377,7 +371,7 @@ void HandEyeCalibrationController::handEyeCalibrationCalibrate(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      switch (hand_eye_calibration_state_->state) {
+      switch (state_->state) {
         case HandEyeCalibrationState::State::Uninitialized:
           throw std::runtime_error{
             "Hand-eye calibration is not started, calibration is not allowed."};
@@ -389,19 +383,19 @@ void HandEyeCalibrationController::handEyeCalibrationCalibrate(
         default:
           throw std::runtime_error{
             "Internal error. Unhandled hand-eye calibration state: " +
-            std::to_string(static_cast<int>(hand_eye_calibration_state_->state))};
+            std::to_string(static_cast<int>(state_->state))};
       }
 
       std::vector<Zivid::Calibration::HandEyeInput> selected_input;
       if (request->capture_handles.empty()) {
-        selected_input = hand_eye_calibration_state_->input;
+        selected_input = state_->input;
       } else {
         for (const int capture_handle : request->capture_handles) {
           const size_t input_index = static_cast<size_t>(capture_handle);
-          if (input_index >= hand_eye_calibration_state_->input.size()) {
+          if (input_index >= state_->input.size()) {
             throw std::runtime_error("Invalid capture handle: " + std::to_string(capture_handle));
           }
-          selected_input.push_back(hand_eye_calibration_state_->input.at(input_index));
+          selected_input.push_back(state_->input.at(input_index));
         }
       }
 
@@ -434,10 +428,9 @@ void HandEyeCalibrationController::handEyeCalibrationCalibrate(
 
       const auto transform = result.transform();
       if (
-        hand_eye_calibration_state_->state == HandEyeCalibrationState::State::CaptureAndCalibrate &&
-        hand_eye_calibration_state_->working_directory.has_value()) {
-        transform.save(
-          hand_eye_calibration_state_->working_directory.value() / "hand_eye_transform.yaml");
+        state_->state == HandEyeCalibrationState::State::CaptureAndCalibrate &&
+        state_->working_directory.has_value()) {
+        transform.save(state_->working_directory.value() / "hand_eye_transform.yaml");
       }
 
       response->set__transform(toGeometryMsgTransform(transform));
