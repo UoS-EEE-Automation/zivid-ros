@@ -79,7 +79,7 @@ protected:
   void infieldStartCaptureWrite()
   {
     auto start = doStdSrvsTriggerRequest("infield_correction/start");
-    ASSERT_TRUE(start->success);
+    verifyTriggerResponseSuccess(start);
 
     auto capture = doEmptySrvRequest<zivid_interfaces::srv::InfieldCorrectionCapture>(
       "infield_correction/capture");
