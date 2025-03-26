@@ -316,7 +316,7 @@ void perform_captures_for_hand_eye_calibration(const rclcpp::Node::SharedPtr & n
 void perform_hand_eye_calibration(
   const rclcpp::Node::SharedPtr & node, const CalibrationConfiguration configuration)
 {
-  RCLCPP_INFO(node->get_logger(), "--- Performing hand-eye calibration with captures data ---");
+  RCLCPP_INFO(node->get_logger(), "--- Performing hand-eye calibration with captured data ---");
   auto calibrate_client = create_service_client<zivid_interfaces::srv::HandEyeCalibrationCalibrate>(
     node, "hand_eye_calibration/calibrate");
 
@@ -330,9 +330,9 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   auto node = std::make_shared<rclcpp::Node>("sample_hand_eye_calibration");
 
-  const CalibrationConfiguration configuration =
+  const auto configuration =
     get_parameter_enum(*node, "configuration", calibration_configuration_map);
-  const std::vector<int> marker_ids = sanitize_marker_ids(
+  const auto marker_ids = sanitize_marker_ids(
     node->get_logger(),
     node->declare_parameter<std::vector<int64_t>>("marker_ids", {}, read_only_parameter));
   const auto working_directory =
