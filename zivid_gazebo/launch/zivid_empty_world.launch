@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<!-- Launch Gazebo simulation in an empty world -->
+<launch>
+
+  <arg name="use_sim_time" default="true"/>
+  <arg name="debug" default="true"/>
+  <arg name="verbose" default="true" />
+  <arg name="paused" default="false" />
+  <arg name="headless" default="false" />
+
+  <arg name="prefix" default="zivid" />
+
+  <arg name="init_pose_x" default="0.0"/>
+  <arg name="init_pose_y" default="0.0"/>
+  <arg name="init_pose_z" default="0.0"/>
+  <arg name="init_pose_yaw" default="0.0"/>
+
+  <!-- start Gazebo with an empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find kmriiwa_gazebo)/worlds/empty.world"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="headless" value="$(arg headless)" />
+  </include>
+
+  <!-- Spawn the Camera -->
+  <include file="$(find zivid_description)/launch/view_zivid_one_plus_m_camera.launch">
+  </include>
+
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_$(arg prefix)"
+        output="screen" respawn="false"
+        args="-urdf
+              -param 'robot_description'
+              -model $(arg prefix)
+              -x $(arg init_pose_x) 
+              -y $(arg init_pose_y) 
+              -z $(arg init_pose_z) 
+              -Y $(arg init_pose_yaw)" >
+  </node>
+
+</launch>
