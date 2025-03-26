@@ -11,6 +11,7 @@ uint8 type
 ### For CALIBRATION_BOARD type
 
 # Specifies the fixed placement of a Zivid calibration board for low degrees-of-freedom hand-eye calibration.
+# This field is not needed for regular (6-DOF) hand-eye calibration.
 FixedPlacementOfCalibrationBoard calibration_board
 
 
@@ -20,4 +21,5 @@ FixedPlacementOfCalibrationBoard calibration_board
 string marker_dictionary
 
 # A list describing the fixed placement of fiducial markers.
+# This field is not needed for regular (6-DOF) hand-eye calibration.
 FixedPlacementOfFiducialMarker[] markers
