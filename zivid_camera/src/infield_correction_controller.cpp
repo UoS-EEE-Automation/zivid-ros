@@ -99,39 +99,37 @@ InfieldCorrectionController::InfieldCorrectionController(
 {
   using namespace std::placeholders;
 
-  infield_correction_state_ = std::make_unique<InfieldCorrectionState>();
-  infield_correction_read_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionRead>(
+  state_ = std::make_unique<InfieldCorrectionState>();
+  read_service_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionRead>(
     "infield_correction/read",
-    std::bind(&InfieldCorrectionController::infieldCorrectionRead, this, _1, _2, _3));
-  infield_correction_reset_ = node_.create_service<std_srvs::srv::Trigger>(
+    std::bind(&InfieldCorrectionController::readServiceHandler, this, _1, _2, _3));
+  reset_service_ = node_.create_service<std_srvs::srv::Trigger>(
     "infield_correction/reset",
-    std::bind(&InfieldCorrectionController::infieldCorrectionReset, this, _1, _2, _3));
-  infield_correction_verify_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionVerify>(
+    std::bind(&InfieldCorrectionController::resetServiceHandler, this, _1, _2, _3));
+  verify_service_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionVerify>(
     "infield_correction/verify",
-    std::bind(&InfieldCorrectionController::infieldCorrectionVerify, this, _1, _2, _3));
-  infield_correction_remove_last_capture_ = node_.create_service<std_srvs::srv::Trigger>(
+    std::bind(&InfieldCorrectionController::verifyServiceHandler, this, _1, _2, _3));
+  remove_last_capture_service_ = node_.create_service<std_srvs::srv::Trigger>(
     "infield_correction/remove_last_capture",
-    std::bind(&InfieldCorrectionController::infieldCorrectionRemoveLastCapture, this, _1, _2, _3));
-  infield_correction_start_ = node_.create_service<std_srvs::srv::Trigger>(
+    std::bind(&InfieldCorrectionController::removeLastCaptureServiceHandler, this, _1, _2, _3));
+  start_service_ = node_.create_service<std_srvs::srv::Trigger>(
     "infield_correction/start",
-    std::bind(&InfieldCorrectionController::infieldCorrectionStart, this, _1, _2, _3));
-  infield_correction_capture_ =
-    node_.create_service<zivid_interfaces::srv::InfieldCorrectionCapture>(
-      "infield_correction/capture",
-      std::bind(&InfieldCorrectionController::infieldCorrectionCapture, this, _1, _2, _3));
-  infield_correction_compute_ =
-    node_.create_service<zivid_interfaces::srv::InfieldCorrectionCompute>(
-      "infield_correction/compute",
-      std::bind(&InfieldCorrectionController::infieldCorrectionCompute, this, _1, _2, _3));
-  infield_correction_compute_and_write_ =
+    std::bind(&InfieldCorrectionController::startServiceHandler, this, _1, _2, _3));
+  capture_service_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionCapture>(
+    "infield_correction/capture",
+    std::bind(&InfieldCorrectionController::captureServiceHandler, this, _1, _2, _3));
+  compute_service_ = node_.create_service<zivid_interfaces::srv::InfieldCorrectionCompute>(
+    "infield_correction/compute",
+    std::bind(&InfieldCorrectionController::computeServiceHandler, this, _1, _2, _3));
+  compute_and_write_service_ =
     node_.create_service<zivid_interfaces::srv::InfieldCorrectionCompute>(
       "infield_correction/compute_and_write",
-      std::bind(&InfieldCorrectionController::infieldCorrectionComputeAndWrite, this, _1, _2, _3));
+      std::bind(&InfieldCorrectionController::computeAndWriteServiceHandler, this, _1, _2, _3));
 }
 
 InfieldCorrectionController::~InfieldCorrectionController() = default;
 
-void InfieldCorrectionController::infieldCorrectionRead(
+void InfieldCorrectionController::readServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Request> /*request*/,
   std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Response> response)
@@ -158,7 +156,7 @@ void InfieldCorrectionController::infieldCorrectionRead(
     response, node_.get_logger(), "InfieldCorrectionRead");
 }
 
-void InfieldCorrectionController::infieldCorrectionReset(
+void InfieldCorrectionController::resetServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
   std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -170,7 +168,7 @@ void InfieldCorrectionController::infieldCorrectionReset(
     node_.get_logger(), "InfieldCorrectionReset");
 }
 
-void InfieldCorrectionController::infieldCorrectionVerify(
+void InfieldCorrectionController::verifyServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionVerify::Request> /*request*/,
   std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionVerify::Response> response)
@@ -203,7 +201,7 @@ void InfieldCorrectionController::infieldCorrectionVerify(
     response, node_.get_logger(), "InfieldCorrectionVerify");
 }
 
-void InfieldCorrectionController::infieldCorrectionRemoveLastCapture(
+void InfieldCorrectionController::removeLastCaptureServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
   std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -213,15 +211,15 @@ void InfieldCorrectionController::infieldCorrectionRemoveLastCapture(
   runFunctionAndCatchExceptions(
     [&]() {
       ensureStarted();
-      if (infield_correction_state_->dataset.empty()) {
+      if (state_->dataset.empty()) {
         throw std::runtime_error("Infield correction dataset is empty");
       }
-      infield_correction_state_->dataset.pop_back();
+      state_->dataset.pop_back();
     },
     response, node_.get_logger(), "InfieldCorrectionRemoveLastCapture");
 }
 
-void InfieldCorrectionController::infieldCorrectionStart(
+void InfieldCorrectionController::startServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
   std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -230,13 +228,13 @@ void InfieldCorrectionController::infieldCorrectionStart(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      *infield_correction_state_ = {};
-      infield_correction_state_->state = InfieldCorrectionState::State::Started;
+      *state_ = {};
+      state_->state = InfieldCorrectionState::State::Started;
     },
     response, node_.get_logger(), "InfieldCorrectionStart");
 }
 
-void InfieldCorrectionController::infieldCorrectionCapture(
+void InfieldCorrectionController::captureServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Request> /*request*/,
   std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Response> response)
@@ -245,7 +243,7 @@ void InfieldCorrectionController::infieldCorrectionCapture(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      auto & dataset = infield_correction_state_->dataset;
+      auto & dataset = state_->dataset;
       response->number_of_captures = safeCast<int>(dataset.size());
       ensureStarted();
       const auto detectionResult = Zivid::Calibration::detectCalibrationBoard(camera_);
@@ -287,7 +285,7 @@ void InfieldCorrectionController::infieldCorrectionCapture(
     response, node_.get_logger(), "InfieldCorrectionCapture");
 }
 
-void InfieldCorrectionController::infieldCorrectionCompute(
+void InfieldCorrectionController::computeServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> /*request*/,
   std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Response> response)
@@ -296,10 +294,10 @@ void InfieldCorrectionController::infieldCorrectionCompute(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      const auto & dataset = infield_correction_state_->dataset;
+      const auto & dataset = state_->dataset;
       // Set started & number of captures before computing, so that it is reported regardless of any exceptions.
       response->infield_correction_started =
-        (infield_correction_state_->state == InfieldCorrectionState::State::Started);
+        (state_->state == InfieldCorrectionState::State::Started);
       response->number_of_captures = safeCast<int>(dataset.size());
       ensureStarted();
       const auto correction = Zivid::Experimental::Calibration::computeCameraCorrection(dataset);
@@ -317,7 +315,7 @@ void InfieldCorrectionController::infieldCorrectionCompute(
     response, node_.get_logger(), "InfieldCorrectionCompute");
 }
 
-void InfieldCorrectionController::infieldCorrectionComputeAndWrite(
+void InfieldCorrectionController::computeAndWriteServiceHandler(
   const std::shared_ptr<rmw_request_id_t> /*request_header*/,
   const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> /*request*/,
   std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Response> response)
@@ -326,9 +324,9 @@ void InfieldCorrectionController::infieldCorrectionComputeAndWrite(
 
   runFunctionAndCatchExceptions(
     [&]() {
-      auto & dataset = infield_correction_state_->dataset;
+      auto & dataset = state_->dataset;
       response->infield_correction_started =
-        (infield_correction_state_->state == InfieldCorrectionState::State::Started);
+        (state_->state == InfieldCorrectionState::State::Started);
       response->number_of_captures = safeCast<int>(dataset.size());
       ensureStarted();
       const auto correction = Zivid::Experimental::Calibration::computeCameraCorrection(dataset);
@@ -345,19 +343,19 @@ void InfieldCorrectionController::infieldCorrectionComputeAndWrite(
       response->message = "Camera correction successfully written to camera.\n" +
                           infieldCorrectionEstimateToString(statistics, accuracyEstimate);
       // Clear the infield correction session after a successful write, the captures cannot be used again.
-      *infield_correction_state_ = {};
-      infield_correction_state_->state = InfieldCorrectionState::State::WriteCompleted;
+      *state_ = {};
+      state_->state = InfieldCorrectionState::State::WriteCompleted;
     },
     response, node_.get_logger(), "InfieldCorrectionComputeAndWrite");
 }
 
 void InfieldCorrectionController::ensureStarted() const
 {
-  switch (infield_correction_state_->state) {
+  switch (state_->state) {
     case InfieldCorrectionState::State::Uninitialized:
       throw std::runtime_error(
         "Infield correction not started. Please call the '" +
-        std::string{infield_correction_start_->get_service_name()} + "' service first.");
+        std::string{start_service_->get_service_name()} + "' service first.");
       break;
     case InfieldCorrectionState::State::Started:
       break;
@@ -365,11 +363,11 @@ void InfieldCorrectionController::ensureStarted() const
       throw std::runtime_error(
         "A new infield correction has been written to the camera. The infield correction session "
         "needs to be restarted before proceeding. This can be done by calling the '" +
-        std::string{infield_correction_start_->get_service_name()} + "' service");
+        std::string{start_service_->get_service_name()} + "' service");
     default:
       throw std::runtime_error(
         "Internal error. Unhandled infield correction state: " +
-        std::to_string(static_cast<int>(infield_correction_state_->state)));
+        std::to_string(static_cast<int>(state_->state)));
   }
 }
 

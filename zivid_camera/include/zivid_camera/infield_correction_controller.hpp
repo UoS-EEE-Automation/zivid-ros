@@ -66,35 +66,35 @@ public:
   ~InfieldCorrectionController();
 
 private:
-  void infieldCorrectionRead(
+  void readServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionRead::Response> response);
-  void infieldCorrectionReset(
+  void resetServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response);
-  void infieldCorrectionVerify(
+  void verifyServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionVerify::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionVerify::Response> response);
-  void infieldCorrectionRemoveLastCapture(
+  void removeLastCaptureServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response);
-  void infieldCorrectionStart(
+  void startServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response);
-  void infieldCorrectionCapture(
+  void captureServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCapture::Response> response);
-  void infieldCorrectionCompute(
+  void computeServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Response> response);
-  void infieldCorrectionComputeAndWrite(
+  void computeAndWriteServiceHandler(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Request> request,
     std::shared_ptr<zivid_interfaces::srv::InfieldCorrectionCompute::Response> response);
@@ -104,18 +104,15 @@ private:
   rclcpp::Node & node_;
   Zivid::Camera & camera_;
 
-  std::unique_ptr<InfieldCorrectionState> infield_correction_state_;
-  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionRead>::SharedPtr infield_correction_read_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_reset_;
-  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionVerify>::SharedPtr
-    infield_correction_verify_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_remove_last_capture_;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr infield_correction_start_;
-  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCapture>::SharedPtr
-    infield_correction_capture_;
+  std::unique_ptr<InfieldCorrectionState> state_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionRead>::SharedPtr read_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_service_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionVerify>::SharedPtr verify_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr remove_last_capture_service_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr start_service_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCapture>::SharedPtr capture_service_;
+  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCompute>::SharedPtr compute_service_;
   rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCompute>::SharedPtr
-    infield_correction_compute_;
-  rclcpp::Service<zivid_interfaces::srv::InfieldCorrectionCompute>::SharedPtr
-    infield_correction_compute_and_write_;
+    compute_and_write_service_;
 };
 }  // namespace zivid_camera
