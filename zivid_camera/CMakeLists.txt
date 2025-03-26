@@ -40,6 +40,7 @@ add_library(
   SHARED
   src/hand_eye_calibration_controller.cpp
   src/infield_correction_controller.cpp
+  src/detector_controller.cpp
   src/utility.cpp
   src/zivid_camera.cpp
 )
@@ -109,6 +110,7 @@ if(BUILD_TESTING)
 
   ament_add_gtest(${TEST_TARGET_NAME}
       test/test_zivid_camera.cpp
+      test/test_detector_controller.cpp
       test/test_infield_correction_controller.cpp
       TIMEOUT 480
   )

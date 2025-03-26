@@ -34,8 +34,8 @@
 #include <Zivid/Frame.h>
 #include <gtest/gtest.h>
 
-#include <filesystem>
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -318,6 +318,12 @@ Settings2D:
   decltype(auto) doSingleDefaultAcquisitionCapture2DUsingFilePath()
   {
     return doCapture2DUsingFilePath(defaultSingleAcquisitionSettings2DYml());
+  }
+
+  void setSingleDefaultAcquisitionSettingsUsingYml()
+  {
+    setNodeParameter(parameter_settings_yaml, defaultSingleAcquisitionSettingsYml());
+    setNodeParameter(parameter_settings_file_path, "");
   }
 
   template <typename ZividDataModel>
