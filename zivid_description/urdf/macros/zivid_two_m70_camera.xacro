@@ -37,7 +37,6 @@
             <collision>
                 <origin xyz="0.0 0.0 0.0" rpy="${0.0*pi} ${0.0*pi} ${0.0*pi}"/>
                 <geometry>
-                    <!-- TODO: Get a low poly DAE file instead of using the visual mesh -->
                     <mesh filename="package://zivid_description/meshes/visual/zivid-two-m70.stl" scale="0.001 0.001 0.001"/>
                 </geometry>
             </collision>
@@ -55,7 +54,8 @@
 
         <!-- Zivid Optical (Measurement) Joint -->
         <joint name="${prefix}_optical_joint" type="fixed">
-            <origin xyz="${0.04802-0.025} 0.05584 0.0295" rpy="-${0.5*pi} 0 -${0.5*pi + 8.5/180*pi}"/>
+            <!-- <origin xyz="${0.04802-0.025} 0.05584 0.0295" rpy="-${0.5*pi} 0 -${0.5*pi + 8.5/180*pi}"/> -->
+            <origin xyz="${0.04802-0.025} 0.05584 0.0295" rpy="-${0.5*pi} ${0.0*pi} -${0.5*pi}"/>
             <parent link="${prefix}_base_link"/>
             <child link="${prefix}_optical_frame"/>
         </joint>
